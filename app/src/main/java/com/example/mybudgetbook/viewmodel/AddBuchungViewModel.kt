@@ -23,6 +23,8 @@ data class AutofillSuggestion(
     val type: TransactionType,
 )
 
+data class SplitPart(val amount: String = "", val categoryId: Long = 0L, val description: String = "")
+
 data class AddBuchungUiState(
     val type: TransactionType = TransactionType.EXPENSE,
     val text: String = "",
@@ -37,6 +39,12 @@ data class AddBuchungUiState(
     val selectedZahlungsartId: Long = 0,
     val datum: Long = System.currentTimeMillis(),
     val autofillSuggestion: AutofillSuggestion? = null,
+    val isRecurring: Boolean = false,
+    val recurringPeriod: Int = 3,
+    val recurringEndDate: Long? = null,
+    val executeOnWeekends: Boolean = false,
+    val isSplit: Boolean = false,
+    val splitParts: List<SplitPart> = listOf(SplitPart()),
     val isSaving: Boolean = false,
     val saved: Boolean = false,
     val error: String? = null,
@@ -73,6 +81,21 @@ class AddBuchungViewModel(private val db: AppDatabase) : ViewModel() {
     fun onDestKontoChange(id: Long) = _state.update { it.copy(selectedDestKontoId = id) }
     fun onKategorieChange(id: Long) = _state.update { it.copy(selectedKategorieId = id) }
     fun onZahlungsartChange(id: Long) = _state.update { it.copy(selectedZahlungsartId = id) }
+    fun onDateChange(date: Long) = _state.update { it.copy(datum = date) }
+    fun onRecurringChange(enabled: Boolean) = _state.update { it.copy(isRecurring = enabled) }
+    fun onRecurringPeriodChange(period: Int) = _state.update { it.copy(recurringPeriod = period) }
+    fun onRecurringEndDateChange(date: Long?) = _state.update { it.copy(recurringEndDate = date) }
+    fun onExecuteOnWeekendsChange(enabled: Boolean) = _state.update { it.copy(executeOnWeekends = enabled) }
+    fun onSplitChange(enabled: Boolean) = _state.update {
+        it.copy(isSplit = enabled, splitParts = if (enabled && it.splitParts.isEmpty()) listOf(SplitPart()) else it.splitParts)
+    }
+    fun addSplitPart() = _state.update { it.copy(splitParts = it.splitParts + SplitPart()) }
+    fun removeSplitPart(index: Int) = _state.update {
+        if (it.splitParts.size <= 1) it else it.copy(splitParts = it.splitParts.filterIndexed { i, _ -> i != index })
+    }
+    fun updateSplitPart(index: Int, part: SplitPart) = _state.update {
+        it.copy(splitParts = it.splitParts.mapIndexed { i, old -> if (i == index) part else old })
+    }
 
     suspend fun suggestFromPreviousTransactions(input: String): AutofillSuggestion? {
         val normalized = input.trim().lowercase(Locale.ROOT)
@@ -116,6 +139,18 @@ class AddBuchungViewModel(private val db: AppDatabase) : ViewModel() {
         if (s.type == TransactionType.TRANSFER && s.selectedKontoId == s.selectedDestKontoId) {
             _state.update { it.copy(error = "لا يمكن التحويل لنفس الحساب") }; return
         }
+        if (s.isSplit && s.type == TransactionType.TRANSFER) {
+            _state.update { it.copy(error = "لا يمكن تقسيم معاملة التحويل حاليًا") }; return
+        }
+        if (s.isRecurring && s.isSplit) {
+            _state.update { it.copy(error = "اختر التكرار أو التقسيم، ولا تجمع بينهما") }; return
+        }
+        if (s.isSplit) {
+            val parts = s.splitParts.map { it.amount.replace(",", ".").toDoubleOrNull() }
+            if (parts.size < 2 || parts.any { it == null || it <= 0.0 } || kotlin.math.abs(parts.filterNotNull().sum() - betrag) > 0.01) {
+                _state.update { it.copy(error = "أدخل جزأين صالحين على الأقل، ويجب أن يساوي مجموعهما المبلغ الأساسي") }; return
+            }
+        }
 
         _state.update { it.copy(isSaving = true, error = null) }
         viewModelScope.launch {
@@ -136,6 +171,13 @@ class AddBuchungViewModel(private val db: AppDatabase) : ViewModel() {
                     notiz = s.notiz.ifBlank { null }, referenzNummer = s.referenzNummer.ifBlank { null },
                     waehrung = s.waehrung, betrag = betrag, betragvz = betragVz,
                     buchungsdatum = s.datum, buchungsdatumSt = fmt.format(Date(s.datum)),
+                    dauerauftrag = if (s.isRecurring) 1 else 0,
+                    periode = if (s.isRecurring) s.recurringPeriod else null,
+                    ablaufdatum = if (s.isRecurring) s.recurringEndDate else null,
+                    ablaufdatumSt = if (s.isRecurring) s.recurringEndDate?.let { fmt.format(Date(it)) } else null,
+                    offenesEnde = if (s.isRecurring && s.recurringEndDate == null) 1 else 0,
+                    wochenende = if (s.isRecurring && s.executeOnWeekends) 1 else 0,
+                    splittbuchung = if (s.isSplit) 1 else 0,
                     idBuchungKonto = s.selectedKontoId, idBuchungKategorie = categoryId,
                     zahlungsart = s.selectedZahlungsartId.toInt(), idBuchungPerson = 1, idBuchungGruppe = 1,
                     createDate = now, createDateSt = fmt.format(Date(now)),
@@ -143,7 +185,26 @@ class AddBuchungViewModel(private val db: AppDatabase) : ViewModel() {
 
                 db.withTransaction {
                     val insertedId = db.buchungDao().insert(buchung)
-                    if (s.type == TransactionType.TRANSFER) {
+                    if (s.isSplit) {
+                        s.splitParts.forEach { part ->
+                            val partAmount = part.amount.replace(",", ".").toDouble()
+                            db.buchungDao().insert(
+                                buchung.copy(
+                                    id = 0,
+                                    text = s.text.trim(),
+                                    beschreibung = part.description.ifBlank { s.beschreibung.ifBlank { null } },
+                                    betrag = partAmount,
+                                    betragvz = if (s.type == TransactionType.EXPENSE) -partAmount else partAmount,
+                                    idBuchungKategorie = part.categoryId.takeIf { it != 0L } ?: categoryId,
+                                    splittbuchung = 1,
+                                    idBuchungSplittid = insertedId,
+                                    dauerauftrag = 0,
+                                    ablaufdatum = null,
+                                    periode = null,
+                                ),
+                            )
+                        }
+                    } else if (s.type == TransactionType.TRANSFER) {
                         db.buchungDao().insert(
                             buchung.copy(
                                 id = 0,

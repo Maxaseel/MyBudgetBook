@@ -19,7 +19,11 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.mybudgetbook.ui.components.CustomKeypad
 import com.example.mybudgetbook.viewmodel.AddBuchungViewModel
+import com.example.mybudgetbook.viewmodel.SplitPart
 import com.example.mybudgetbook.viewmodel.TransactionType
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,6 +38,8 @@ fun AddBuchungScreen(
     val zahlungsarten by viewModel.zahlungsarten.collectAsStateWithLifecycle()
 
     var showKeypad by remember { mutableStateOf(false) }
+    var showStartDatePicker by remember { mutableStateOf(false) }
+    var showRecurringDatePicker by remember { mutableStateOf(false) }
 
     LaunchedEffect(konten, kategorien, zahlungsarten) {
         if (s.selectedKontoId == 0L && konten.isNotEmpty()) viewModel.onKontoChange(konten.first().id)
@@ -94,7 +100,9 @@ fun AddBuchungScreen(
                 OutlinedTextField(value = s.notiz, onValueChange = viewModel::onNotizChange, label = { Text("ملاحظات") }, modifier = Modifier.fillMaxWidth(), minLines = 2, colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White))
 
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedTextField(value = "2026/10/18", onValueChange = {}, readOnly = true, label = { Text("التاريخ") }, modifier = Modifier.weight(1f), colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White))
+                    OutlinedButton(onClick = { showStartDatePicker = true }, modifier = Modifier.weight(1f)) {
+                        Text(SimpleDateFormat("yyyy/MM/dd", Locale("ar")).format(Date(s.datum)))
+                    }
                     OutlinedTextField(value = s.waehrung, onValueChange = {}, readOnly = true, label = { Text("العملة") }, modifier = Modifier.weight(0.5f), colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White))
                 }
 
@@ -114,7 +122,48 @@ fun AddBuchungScreen(
                     DropdownField("الحساب", konten.map { it.id to it.name }, s.selectedKontoId, viewModel::onKontoChange)
                 }
 
-                CheckboxRow("معاملة متكررة", false, {})
+                CheckboxRow("معاملة متكررة", s.isRecurring, viewModel::onRecurringChange)
+                if (s.isRecurring) {
+                    DropdownField(
+                        "الفترة",
+                        listOf(1L to "يومي", 2L to "أسبوعي", 3L to "شهري", 4L to "سنوي"),
+                        s.recurringPeriod.toLong(),
+                    ) { viewModel.onRecurringPeriodChange(it.toInt()) }
+                    OutlinedButton(onClick = { showRecurringDatePicker = true }, modifier = Modifier.fillMaxWidth()) {
+                        Text("تاريخ الانتهاء: ${s.recurringEndDate?.let { SimpleDateFormat("yyyy/MM/dd", Locale("ar")).format(Date(it)) } ?: "مفتوح"}")
+                    }
+                    CheckboxRow("تأجيل التنفيذ إلى يوم عمل عند نهاية الأسبوع", s.executeOnWeekends, viewModel::onExecuteOnWeekendsChange)
+                }
+                CheckboxRow("حركة مقسمة", s.isSplit, viewModel::onSplitChange)
+                if (s.isSplit) {
+                    Card(colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E))) {
+                        Column(Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text("أجزاء المعاملة (مجموع الأجزاء يجب أن يساوي المبلغ)", color = Color.White)
+                            s.splitParts.forEachIndexed { index, part ->
+                                Text("الجزء ${index + 1}", color = Color.LightGray)
+                                OutlinedTextField(
+                                    value = part.amount,
+                                    onValueChange = { viewModel.updateSplitPart(index, part.copy(amount = it)) },
+                                    label = { Text("المبلغ") }, modifier = Modifier.fillMaxWidth(), singleLine = true,
+                                )
+                                DropdownField(
+                                    "الفئة",
+                                    kategorien.map { it.id to it.name },
+                                    part.categoryId,
+                                ) { viewModel.updateSplitPart(index, part.copy(categoryId = it)) }
+                                OutlinedTextField(
+                                    value = part.description,
+                                    onValueChange = { viewModel.updateSplitPart(index, part.copy(description = it)) },
+                                    label = { Text("وصف الجزء") }, modifier = Modifier.fillMaxWidth(), singleLine = true,
+                                )
+                                if (s.splitParts.size > 1) {
+                                    TextButton(onClick = { viewModel.removeSplitPart(index) }) { Text("حذف الجزء") }
+                                }
+                            }
+                            OutlinedButton(onClick = viewModel::addSplitPart, modifier = Modifier.fillMaxWidth()) { Text("إضافة جزء") }
+                        }
+                    }
+                }
                 CheckboxRow("تذكير", false, {})
                 CheckboxRow("إضافة صورة", false, {})
 
@@ -135,6 +184,32 @@ fun AddBuchungScreen(
                     )
                 }
             }
+        }
+        if (showRecurringDatePicker) {
+            val pickerState = rememberDatePickerState(initialSelectedDateMillis = s.recurringEndDate ?: (s.datum + 30L * 24 * 60 * 60 * 1000))
+            DatePickerDialog(
+                onDismissRequest = { showRecurringDatePicker = false },
+                confirmButton = {
+                    TextButton(onClick = {
+                        viewModel.onRecurringEndDateChange(pickerState.selectedDateMillis)
+                        showRecurringDatePicker = false
+                    }) { Text("تم") }
+                },
+                dismissButton = { TextButton(onClick = { showRecurringDatePicker = false }) { Text("إلغاء") } },
+            ) { DatePicker(state = pickerState) }
+        }
+        if (showStartDatePicker) {
+            val pickerState = rememberDatePickerState(initialSelectedDateMillis = s.datum)
+            DatePickerDialog(
+                onDismissRequest = { showStartDatePicker = false },
+                confirmButton = {
+                    TextButton(onClick = {
+                        pickerState.selectedDateMillis?.let(viewModel::onDateChange)
+                        showStartDatePicker = false
+                    }) { Text("تم") }
+                },
+                dismissButton = { TextButton(onClick = { showStartDatePicker = false }) { Text("إلغاء") } },
+            ) { DatePicker(state = pickerState) }
         }
     }
 }

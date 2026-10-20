@@ -1,0 +1,164 @@
+package com.example.mybudgetbook.ui.screens.buchungen
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.mybudgetbook.data.relation.BuchungMitDetails
+import com.example.mybudgetbook.viewmodel.BuchungenViewModel
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun BuchungenScreen(
+    viewModel: BuchungenViewModel,
+    onAdd: () -> Unit,
+    onOpenDrawer: () -> Unit,
+    onOpenStats: () -> Unit
+) {
+    val buchungen by viewModel.buchungen.collectAsStateWithLifecycle()
+    val balance by viewModel.balance.collectAsStateWithLifecycle()
+    val income by viewModel.income.collectAsStateWithLifecycle()
+
+    Scaffold(
+        topBar = {
+            Column {
+                TopAppBar(
+                    title = { Text(stringResource(R.string.transactions), color = Color.White, fontWeight = FontWeight.Bold) },
+                    navigationIcon = {
+                        IconButton(onClick = onOpenDrawer) {
+                            Icon(Icons.Default.Menu, contentDescription = null, tint = Color.White)
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = onOpenStats) {
+                            Icon(Icons.Default.BarChart, contentDescription = null, tint = Color.White)
+                        }
+                        IconButton(onClick = {}) {
+                            Icon(Icons.Default.MoreVert, contentDescription = null, tint = Color.White)
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color(0xFF1E1E1E),
+                        titleContentColor = Color.White,
+                        navigationIconContentColor = Color.White,
+                        actionIconContentColor = Color.White
+                    )
+                )
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color(0xFF1E1E1E))
+                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(stringResource(R.string.entries), color = Color.White, fontSize = 14.sp)
+                    Text(stringResource(R.string.transactions), color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.calendar), color = Color.White, fontSize = 14.sp)
+                }
+            }
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = onAdd,
+                containerColor = Color(0xFF43A047),
+                contentColor = Color.White
+            ) {
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add))
+            }
+        },
+        bottomBar = {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFF1E1E1E))
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(horizontalAlignment = Alignment.Start) {
+                    Text(stringResource(R.string.current_balance), color = Color.Gray, style = MaterialTheme.typography.bodySmall)
+                    Text("${balance ?: 0.0} SAR", color = Color.White, fontWeight = FontWeight.Bold)
+                }
+                Column(horizontalAlignment = Alignment.End) {
+                    Text(stringResource(R.string.total_income), color = Color.Gray, style = MaterialTheme.typography.bodySmall)
+                    Text("${income ?: 0.0} SAR", color = Color(0xFF43A047), fontWeight = FontWeight.Bold)
+                }
+            }
+        },
+        containerColor = Color(0xFF121212)
+    ) { padding ->
+        LazyColumn(
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxSize()
+                .background(Color(0xFF121212)),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            if (buchungen.isEmpty()) {
+                item {
+                    Text(stringResource(R.string.transactions_empty), color = Color.Gray, modifier = Modifier.padding(24.dp))
+                }
+            } else {
+                items(buchungen, key = { it.id }) { item ->
+                    TransactionItem(item)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TransactionItem(item: BuchungMitDetails) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color(0xFF1E1E1E), RoundedCornerShape(12.dp))
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(
+            modifier = Modifier
+                .width(52.dp)
+                .background(Color(0xFF2C2C2C), RoundedCornerShape(10.dp))
+                .padding(vertical = 8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text("${item.buchungsdatum?.substringAfter('-')?.substringBefore('-') ?: "01"}", color = Color.White, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.october), color = Color.Gray, fontSize = 10.sp)
+        }
+
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(item.titel, color = Color.White, fontWeight = FontWeight.Bold)
+            Text("${item.kontoName} • ${item.kategorieName}", color = Color.Gray, fontSize = 12.sp)
+            item.notiz?.takeIf { it.isNotBlank() }?.let {
+                Text("✍️ $it", color = Color.Gray, fontSize = 12.sp)
+            }
+        }
+
+        Text(
+            text = if (item.betragVz >= 0) "+${item.betragVz}" else "${item.betragVz}",
+            color = if (item.betragVz >= 0) Color(0xFF43A047) else Color(0xFFE53935),
+            fontWeight = FontWeight.Bold,
+            fontSize = 16.sp
+        )
+    }
+}
+

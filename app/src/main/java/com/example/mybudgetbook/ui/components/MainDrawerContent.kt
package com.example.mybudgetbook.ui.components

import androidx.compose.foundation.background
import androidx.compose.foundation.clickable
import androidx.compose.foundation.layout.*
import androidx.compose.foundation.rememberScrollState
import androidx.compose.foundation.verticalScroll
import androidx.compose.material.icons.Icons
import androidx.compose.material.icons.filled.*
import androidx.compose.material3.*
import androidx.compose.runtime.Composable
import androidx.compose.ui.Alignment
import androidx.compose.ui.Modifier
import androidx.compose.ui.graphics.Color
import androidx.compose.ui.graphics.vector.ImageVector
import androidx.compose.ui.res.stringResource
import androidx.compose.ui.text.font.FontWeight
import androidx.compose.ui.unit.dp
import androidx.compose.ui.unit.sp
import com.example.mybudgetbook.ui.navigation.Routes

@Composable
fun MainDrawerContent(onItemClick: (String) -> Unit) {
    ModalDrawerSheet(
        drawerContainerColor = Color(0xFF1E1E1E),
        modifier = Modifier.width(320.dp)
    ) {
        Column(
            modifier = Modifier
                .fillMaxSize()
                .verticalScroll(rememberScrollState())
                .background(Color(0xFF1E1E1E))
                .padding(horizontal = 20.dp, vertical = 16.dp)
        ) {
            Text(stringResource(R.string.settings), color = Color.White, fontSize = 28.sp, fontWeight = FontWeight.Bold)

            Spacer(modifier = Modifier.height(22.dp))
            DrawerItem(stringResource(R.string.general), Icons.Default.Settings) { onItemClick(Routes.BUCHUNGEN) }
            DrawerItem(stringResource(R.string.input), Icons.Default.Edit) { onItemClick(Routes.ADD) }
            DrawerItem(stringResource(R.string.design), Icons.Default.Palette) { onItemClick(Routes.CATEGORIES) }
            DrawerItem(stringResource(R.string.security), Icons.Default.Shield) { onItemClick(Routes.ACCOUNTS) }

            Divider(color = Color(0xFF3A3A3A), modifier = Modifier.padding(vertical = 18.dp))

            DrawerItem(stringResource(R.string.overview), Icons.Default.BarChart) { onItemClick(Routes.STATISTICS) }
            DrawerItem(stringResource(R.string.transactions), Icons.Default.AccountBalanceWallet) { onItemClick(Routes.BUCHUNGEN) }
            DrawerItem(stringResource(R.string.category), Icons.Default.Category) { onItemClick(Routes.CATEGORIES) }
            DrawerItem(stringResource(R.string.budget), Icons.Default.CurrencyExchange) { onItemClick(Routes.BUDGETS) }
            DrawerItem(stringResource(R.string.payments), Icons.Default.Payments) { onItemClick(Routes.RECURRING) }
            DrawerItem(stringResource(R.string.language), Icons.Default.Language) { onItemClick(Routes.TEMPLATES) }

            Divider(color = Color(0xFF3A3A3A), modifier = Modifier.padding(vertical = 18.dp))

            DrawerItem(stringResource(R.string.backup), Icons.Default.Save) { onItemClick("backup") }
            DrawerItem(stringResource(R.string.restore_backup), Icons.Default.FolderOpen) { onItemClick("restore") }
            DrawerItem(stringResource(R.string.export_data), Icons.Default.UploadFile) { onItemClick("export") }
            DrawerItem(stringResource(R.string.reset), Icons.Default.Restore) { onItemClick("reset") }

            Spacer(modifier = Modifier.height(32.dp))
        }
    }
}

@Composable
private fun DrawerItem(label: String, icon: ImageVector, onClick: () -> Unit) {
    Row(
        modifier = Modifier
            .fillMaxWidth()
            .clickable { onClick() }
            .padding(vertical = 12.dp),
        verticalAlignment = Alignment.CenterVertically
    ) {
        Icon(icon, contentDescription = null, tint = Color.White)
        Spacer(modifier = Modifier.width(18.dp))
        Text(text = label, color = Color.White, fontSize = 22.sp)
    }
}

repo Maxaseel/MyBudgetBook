@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ميزانيتي</string>
+
+    <string name="settings">الإعدادات</string>
+    <string name="general">عام</string>
+    <string name="input">إدخال</string>
+    <string name="design">التصميم</string>
+    <string name="security">الأمان</string>
+    <string name="overview">نظرة عامة</string>
+    <string name="transactions">المعاملات</string>
+    <string name="category">التصنيف</string>
+    <string name="budget">الميزانية</string>
+    <string name="payments">المدفوعات</string>
+    <string name="language">اللغة</string>
+    <string name="backup">نسخة احتياطية</string>
+    <string name="restore_backup">استعادة نسخة احتياطية</string>
+    <string name="export_data">تصدير البيانات</string>
+    <string name="reset">إعادة ضبط</string>
+
+    <string name="current_balance">الرصيد الحالي</string>
+    <string name="total_income">مجموع الدخل</string>
+    <string name="transactions_empty">لا توجد معاملات بعد</string>
+    <string name="october">أكتوبر</string>
+    <string name="year_2026">2026</string>
+    <string name="entries">الإدخالات</string>
+    <string name="calendar">التقويم</string>
+    <string name="add">إضافة</string>
+
+    <string name="accounts">الحسابات</string>
+    <string name="current_balance_today">الرصيد الحالي (اليوم)</string>
+    <string name="sort_by">فرز حسب</string>
+    <string name="sort_account_az">الحساب (من الألف إلى الياء)</string>
+    <string name="sort_account_za">الحساب (من الياء إلى الألف)</string>
+    <string name="sort_balance_high">الرصيد الحالي (الأكبر)</string>
+    <string name="sort_balance_low">الرصيد الحالي (الأصغر)</string>
+
+    <string name="budget_management">إدارة الميزانيات</string>
+    <string name="search">بحث</string>
+    <string name="remaining_sar">متبقية</string>
+    <string name="spent">تم الصرف</string>
+    <string name="remaining">المتبقي</string>
+    <string name="budget_save">حفظ الميزانية</string>
+    <string name="budget_name">اسم الميزانية</string>
+    <string name="budget_limit">الحد الأقصى للمبلغ</string>
+    <string name="new_budget">ميزانية جديدة</string>
+    <string name="reference_number">رقم الحوالة</string>
+    <string name="amount">المبلغ</string>
+    <string name="category_label">الفئة</string>
+    <string name="account_label">الحساب</string>
+    <string name="date_label">التاريخ</string>
+    <string name="auto_approve">اعتماد تلقائي</string>
+    <string name="save">حفظ</string>
+    <string name="choose_month">اختر الشهر</string>
+    <string name="cancel">Cancel</string>
+    <string name="month_july">يوليو</string>
+    <string name="month_august">أغسطس</string>
+    <string name="month_september">سبتمبر</string>
+    <string name="month_october">أكتوبر</string>
+    <string name="month_november">نوفمبر</string>
+    <string name="month_december">ديسمبر</string>
+</resources>

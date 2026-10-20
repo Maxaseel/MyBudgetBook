@@ -15,6 +15,7 @@ data class Budget(
     val datumBis: Long,
     @ColumnInfo(name = "datumBis_st") val datumBisSt: String,
     val periode: Int = 0,
+    val restbudgetUebertragen: Boolean = false,
     val abgeglichen: Int? = 0,
     val nurAusgabenBeruecksichtigen: Int = 1,
     val ueberweisen: Int = 0,

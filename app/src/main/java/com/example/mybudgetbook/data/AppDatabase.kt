@@ -11,9 +11,9 @@ import com.example.mybudgetbook.data.entity.*
     entities = [
         Buchung::class, Konto::class, Kategorie::class,
         Zahlungsart::class, Person::class, Gruppe::class,
-        Budget::class
+        Budget::class, Regel::class, Sparziel::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -25,6 +25,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun gruppeDao(): GruppeDao
     abstract fun statDao(): StatDao
     abstract fun budgetDao(): BudgetDao
+    abstract fun regelDao(): RegelDao
+    abstract fun sparzielDao(): SparzielDao
 
     companion object {
         const val DATABASE_NAME = "mybudgetbook.db"

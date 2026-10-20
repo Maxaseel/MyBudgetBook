@@ -21,3 +21,10 @@
 3. `File → Open` واختر مجلد `MyBudgetBook`.
 4. انتظر Gradle Sync.
 5. اضغط **Run ▶**.
+
+
+## الرخصة والإسناد
+
+هذا المشروع مرخّص بموجب **GNU General Public License v3.0 (GPL-3.0)**؛ راجع ملف [`LICENSE`](LICENSE) للنص الكامل.
+
+تتضمن قاعدة الشفرة أجزاءً مقتبسة أو معدّلة من مشروع [MyExpenses](https://github.com/mtotschnig/MyExpenses)، وهو أيضًا مرخّص بـGPL-3. تحفظ ملفات المصدر المنقولة إشعارات حقوق النشر والترخيص الأصلية، وتُعلّم التعديلات بوضوح. راجع [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) لتفاصيل الملفات ومصدرها.

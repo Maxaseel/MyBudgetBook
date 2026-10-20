@@ -26,6 +26,9 @@ fun MainDrawerContent(onItemClick: (String) -> Unit) {
             DrawerItem("المعاملات المتكررة", Icons.Default.Loop) { onItemClick(Routes.RECURRING) }
             DrawerItem("القوالب", Icons.Default.Assignment) { onItemClick(Routes.TEMPLATES) }
             DrawerItem("إدارة الميزانية", Icons.Default.BarChart) { onItemClick(Routes.BUDGETS) }
+            DrawerItem("أهداف الادخار", Icons.Default.AccountBalanceWallet) { onItemClick(Routes.SAVINGS) }
+            DrawerItem("القواعد التلقائية", Icons.Default.Build) { onItemClick(Routes.RULES) }
+            DrawerItem("الإعدادات", Icons.Default.Settings) { onItemClick(Routes.SETTINGS) }
 
             HorizontalDivider(color = Color.DarkGray, modifier = Modifier.padding(vertical = 12.dp))
             Text("وظائف مفيدة", color = Color.Gray, fontSize = 14.sp, modifier = Modifier.padding(vertical = 12.dp))
@@ -42,6 +45,7 @@ fun MainDrawerContent(onItemClick: (String) -> Unit) {
             DrawerItem("تصدير البيانات", Icons.Default.Share) { onItemClick("export") }
             DrawerItem("استيراد CSV", Icons.Default.Download) { onItemClick("import_csv") }
             DrawerItem("آخر واردات CSV", Icons.Default.Description) { onItemClick("recent_csv") }
+            DrawerItem("إدارة البيانات", Icons.Default.Storage) { onItemClick(Routes.DATA_MANAGEMENT) }
 
             Spacer(modifier = Modifier.height(32.dp))
         }

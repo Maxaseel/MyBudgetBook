@@ -19,7 +19,13 @@ import com.example.mybudgetbook.ui.screens.budgets.AddBudgetScreen
 import com.example.mybudgetbook.ui.screens.budgets.BudgetsScreen
 import com.example.mybudgetbook.ui.screens.calendar.CalendarScreen
 import com.example.mybudgetbook.ui.screens.categories.CategoriesScreen
+import com.example.mybudgetbook.ui.screens.data.CsvImportScreen
+import com.example.mybudgetbook.ui.screens.data.CsvRecentScreen
+import com.example.mybudgetbook.ui.screens.data.DataManagementScreen
 import com.example.mybudgetbook.ui.screens.recurring.RecurringScreen
+import com.example.mybudgetbook.ui.screens.rules.RulesScreen
+import com.example.mybudgetbook.ui.screens.savings.SavingsGoalsScreen
+import com.example.mybudgetbook.ui.screens.settings.SettingsScreen
 import com.example.mybudgetbook.ui.screens.statistics.StatisticsScreen
 import com.example.mybudgetbook.ui.screens.templates.TemplatesScreen
 import com.example.mybudgetbook.viewmodel.*
@@ -38,6 +44,12 @@ object Routes {
     const val TEMPLATES = "templates"
     const val BUDGETS = "budgets"
     const val ADD_BUDGET = "add_budget"
+    const val SAVINGS = "savings"
+    const val RULES = "rules"
+    const val SETTINGS = "settings"
+    const val DATA_MANAGEMENT = "data_management"
+    const val CSV_IMPORT = "import_csv"
+    const val CSV_RECENT = "recent_csv"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -58,8 +70,18 @@ fun AppNavigation(db: AppDatabase) {
         drawerContent = {
             MainDrawerContent { route ->
                 scope.launch { drawerState.close() }
-                if (route in listOf(Routes.ACCOUNTS, Routes.STATISTICS, Routes.CALENDAR, Routes.CATEGORIES, Routes.RECURRING, Routes.TEMPLATES, Routes.BUDGETS)) {
-                    nav.navigate(route)
+                val destination = when (route) {
+                    "backup", "restore", "export" -> Routes.DATA_MANAGEMENT
+                    else -> route
+                }
+                if (destination in listOf(
+                        Routes.ACCOUNTS, Routes.STATISTICS, Routes.CALENDAR, Routes.CATEGORIES,
+                        Routes.RECURRING, Routes.TEMPLATES, Routes.BUDGETS, Routes.SAVINGS,
+                        Routes.RULES, Routes.SETTINGS, Routes.DATA_MANAGEMENT, Routes.CSV_IMPORT,
+                        Routes.CSV_RECENT,
+                    )
+                ) {
+                    nav.navigate(destination)
                 }
             }
         }
@@ -109,6 +131,12 @@ fun AppNavigation(db: AppDatabase) {
                 val vm: BudgetViewModel = viewModel(factory = vmFactory { BudgetViewModel(db) })
                 AddBudgetScreen(viewModel = vm, onBack = { nav.popBackStack() })
             }
+            composable(Routes.SAVINGS) { SavingsGoalsScreen(db = db, onBack = { nav.popBackStack() }) }
+            composable(Routes.RULES) { RulesScreen(db = db, onBack = { nav.popBackStack() }) }
+            composable(Routes.SETTINGS) { SettingsScreen(onBack = { nav.popBackStack() }) }
+            composable(Routes.DATA_MANAGEMENT) { DataManagementScreen(db = db, onBack = { nav.popBackStack() }) }
+            composable(Routes.CSV_IMPORT) { CsvImportScreen(db = db, onBack = { nav.popBackStack() }) }
+            composable(Routes.CSV_RECENT) { CsvRecentScreen(db = db, onBack = { nav.popBackStack() }) }
         }
     }
 }

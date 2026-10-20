@@ -37,7 +37,6 @@ fun AddBuchungScreen(
 
     LaunchedEffect(konten, kategorien, zahlungsarten) {
         if (s.selectedKontoId == 0L && konten.isNotEmpty()) viewModel.onKontoChange(konten.first().id)
-        if (s.selectedKategorieId == 0L && kategorien.isNotEmpty()) viewModel.onKategorieChange(kategorien.first().id)
         if (s.selectedZahlungsartId == 0L && zahlungsarten.isNotEmpty()) viewModel.onZahlungsartChange(zahlungsarten.first().id)
     }
 
@@ -72,6 +71,25 @@ fun AddBuchungScreen(
 
             Column(modifier = Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedTextField(value = s.text, onValueChange = viewModel::onTextChange, label = { Text("الاسم") }, modifier = Modifier.fillMaxWidth(), singleLine = true, colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White))
+                s.autofillSuggestion?.let { suggestion ->
+                    Surface(
+                        color = Color(0xFF242424),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text("اقتراح من: ${suggestion.previousText}", color = Color.White)
+                                Text("${suggestion.amount} SAR", color = Color.LightGray, fontSize = 13.sp)
+                            }
+                            TextButton(onClick = viewModel::applyAutofillSuggestion) { Text("استخدم") }
+                        }
+                    }
+                }
                 OutlinedTextField(value = s.referenzNummer, onValueChange = viewModel::onRefChange, label = { Text("رقم الحوالة") }, modifier = Modifier.fillMaxWidth(), singleLine = true, colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White))
                 OutlinedTextField(value = s.notiz, onValueChange = viewModel::onNotizChange, label = { Text("ملاحظات") }, modifier = Modifier.fillMaxWidth(), minLines = 2, colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White))
 

@@ -45,7 +45,7 @@ fun BudgetsScreen(viewModel: BudgetViewModel, onBack: () -> Unit, onAddBudget: (
 
 @Composable
 fun BudgetCard(budget: BudgetMitAusgaben) {
-    val max = budget.budget.maxSumme
+    val max = budget.budget.maxSumme + budget.uebertragenerBetrag
     val spent = budget.ausgegeben
     val remaining = max - spent
     val progress = if (max > 0) (spent / max).toFloat().coerceIn(0f, 1f) else 0f
@@ -57,6 +57,9 @@ fun BudgetCard(budget: BudgetMitAusgaben) {
                 Text("${remaining.toInt()} SAR متبقية", color = if (remaining >= 0) Color(0xFF43A047) else Color(0xFFE53935), fontSize = 14.sp)
             }
             Spacer(modifier = Modifier.height(12.dp))
+            if (budget.uebertragenerBetrag > 0.0) {
+                Text("يتضمن ${budget.uebertragenerBetrag.toInt()} SAR مرحّلة من الفترة السابقة", color = Color(0xFF81C784), fontSize = 12.sp)
+            }
             LinearProgressIndicator(
                 progress = { progress }, modifier = Modifier.fillMaxWidth().height(8.dp),
                 color = if (progress < 0.8f) Color(0xFF43A047) else Color(0xFFE53935),

@@ -1,6 +1,7 @@
 package com.example.mybudgetbook.ui.screens.savings
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,7 +18,8 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenu
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -130,25 +132,22 @@ private fun AddSavingsGoalDialog(
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(name, { name = it }, label = { Text("اسم الهدف") }, singleLine = true)
                 OutlinedTextField(amount, { amount = it }, label = { Text("المبلغ المستهدف") }, singleLine = true)
-                androidx.compose.material3.ExposedDropdownMenuBox(
-                    expanded = accountMenu,
-                    onExpandedChange = { accountMenu = !accountMenu },
-                ) {
+                Box {
                     OutlinedTextField(
                         value = accounts.firstOrNull { it.konto.id == accountId }?.konto?.name ?: "اختر الحساب",
                         onValueChange = {}, readOnly = true,
                         label = { Text("حساب الادخار") },
-                        trailingIcon = { androidx.compose.material3.ExposedDropdownMenuDefaults.TrailingIcon(accountMenu) },
-                        modifier = Modifier.fillMaxWidth().menuAnchor(),
+                        modifier = Modifier.fillMaxWidth(),
                     )
-                    ExposedDropdownMenu(expanded = accountMenu, onDismissRequest = { accountMenu = false }) {
+                    DropdownMenu(expanded = accountMenu, onDismissRequest = { accountMenu = false }) {
                         accounts.forEach { account ->
-                            androidx.compose.material3.DropdownMenuItem(
+                            DropdownMenuItem(
                                 text = { Text(account.konto.name) },
                                 onClick = { accountId = account.konto.id; accountMenu = false },
                             )
                         }
                     }
+                    TextButton(onClick = { accountMenu = true }) { Text("اختيار الحساب") }
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     TextButton(onClick = { pickStart = true }) { Text("البداية: ${start.toDate()}") }

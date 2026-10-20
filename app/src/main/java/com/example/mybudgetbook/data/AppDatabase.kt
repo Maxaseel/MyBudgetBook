@@ -27,6 +27,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun budgetDao(): BudgetDao
 
     companion object {
+        const val DATABASE_NAME = "mybudgetbook.db"
+
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
@@ -35,10 +37,14 @@ abstract class AppDatabase : RoomDatabase() {
                 INSTANCE ?: Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
-                    "mybudgetbook.db",
+                    DATABASE_NAME,
                 )
-                .fallbackToDestructiveMigration()
-                .build().also { INSTANCE = it }
+                    .fallbackToDestructiveMigration()
+                    .build().also { INSTANCE = it }
             }
+
+        fun resetInstance() {
+            INSTANCE = null
+        }
     }
 }

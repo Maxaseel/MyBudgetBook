@@ -15,6 +15,7 @@ import com.example.mybudgetbook.ui.screens.accounts.AccountsScreen
 import com.example.mybudgetbook.ui.screens.accounts.AddEditAccountScreen
 import com.example.mybudgetbook.ui.screens.addbuchung.AddBuchungScreen
 import com.example.mybudgetbook.ui.screens.buchungen.BuchungenScreen
+import com.example.mybudgetbook.ui.screens.charts.ChartsScreen
 import com.example.mybudgetbook.ui.screens.budgets.AddBudgetScreen
 import com.example.mybudgetbook.ui.screens.budgets.BudgetsScreen
 import com.example.mybudgetbook.ui.screens.calendar.CalendarScreen
@@ -50,6 +51,7 @@ object Routes {
     const val DATA_MANAGEMENT = "data_management"
     const val CSV_IMPORT = "import_csv"
     const val CSV_RECENT = "recent_csv"
+    const val CHARTS = "charts"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -78,7 +80,7 @@ fun AppNavigation(db: AppDatabase) {
                         Routes.ACCOUNTS, Routes.STATISTICS, Routes.CALENDAR, Routes.CATEGORIES,
                         Routes.RECURRING, Routes.TEMPLATES, Routes.BUDGETS, Routes.SAVINGS,
                         Routes.RULES, Routes.SETTINGS, Routes.DATA_MANAGEMENT, Routes.CSV_IMPORT,
-                        Routes.CSV_RECENT,
+                        Routes.CSV_RECENT, Routes.CHARTS,
                     )
                 ) {
                     nav.navigate(destination)
@@ -137,6 +139,7 @@ fun AppNavigation(db: AppDatabase) {
             composable(Routes.DATA_MANAGEMENT) { DataManagementScreen(db = db, onBack = { nav.popBackStack() }) }
             composable(Routes.CSV_IMPORT) { CsvImportScreen(db = db, onBack = { nav.popBackStack() }) }
             composable(Routes.CSV_RECENT) { CsvRecentScreen(db = db, onBack = { nav.popBackStack() }) }
+            composable(Routes.CHARTS) { ChartsScreen(db = db, onBack = { nav.popBackStack() }) }
         }
     }
 }

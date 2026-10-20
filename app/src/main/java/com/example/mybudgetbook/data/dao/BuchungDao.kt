@@ -26,6 +26,9 @@ interface BuchungDao {
     @Query("SELECT * FROM buchungen ORDER BY buchungsdatum ASC")
     suspend fun getAllRaw(): List<Buchung>
 
+    @Query("SELECT * FROM buchungen WHERE vorlage = 0 ORDER BY buchungsdatum ASC")
+    fun observeAllRaw(): Flow<List<Buchung>>
+
     @Query("""
         SELECT
             buchungen.id AS id,
@@ -46,18 +49,19 @@ interface BuchungDao {
         INNER JOIN personen ON personen.id = buchungen.id_buchung_person
         INNER JOIN gruppen ON gruppen.id = buchungen.id_buchung_gruppe
         WHERE buchungen.vorlage = 0
+          AND NOT EXISTS (SELECT 1 FROM buchungen split_child WHERE split_child.id_buchung_splittid = buchungen.id)
         GROUP BY buchungen.id
         ORDER BY buchungsdatum_st DESC
     """)
     fun getAllWithDetails(): Flow<List<BuchungMitDetails>>
 
-    @Query("SELECT SUM(betragvz) FROM buchungen WHERE vorlage = 0")
+    @Query("SELECT SUM(betragvz) FROM buchungen WHERE vorlage = 0 AND NOT EXISTS (SELECT 1 FROM buchungen split_child WHERE split_child.id_buchung_splittid = buchungen.id)")
     fun getTotalBalance(): Flow<Double?>
 
-    @Query("SELECT SUM(betragvz) FROM buchungen WHERE betragvz > 0 AND vorlage = 0")
+    @Query("SELECT SUM(betragvz) FROM buchungen WHERE betragvz > 0 AND vorlage = 0 AND NOT EXISTS (SELECT 1 FROM buchungen split_child WHERE split_child.id_buchung_splittid = buchungen.id)")
     fun getTotalIncome(): Flow<Double?>
 
-    @Query("SELECT * FROM buchungen WHERE buchungsdatum >= :start AND buchungsdatum <= :end AND vorlage = 0")
+    @Query("SELECT * FROM buchungen WHERE buchungsdatum >= :start AND buchungsdatum <= :end AND vorlage = 0 AND NOT EXISTS (SELECT 1 FROM buchungen split_child WHERE split_child.id_buchung_splittid = buchungen.id)")
     fun getBuchungenBetween(start: Long, end: Long): Flow<List<Buchung>>
 
     @Query("SELECT * FROM buchungen WHERE dauerauftrag = 1 AND vorlage = 0 ORDER BY buchungsdatum DESC")

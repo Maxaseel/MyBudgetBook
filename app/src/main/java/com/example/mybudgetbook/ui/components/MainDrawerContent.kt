@@ -26,6 +26,7 @@ fun MainDrawerContent(onItemClick: (String) -> Unit) {
             DrawerItem("المعاملات المتكررة", Icons.Default.Loop) { onItemClick(Routes.RECURRING) }
             DrawerItem("القوالب", Icons.Default.Assignment) { onItemClick(Routes.TEMPLATES) }
             DrawerItem("إدارة الميزانية", Icons.Default.BarChart) { onItemClick(Routes.BUDGETS) }
+            DrawerItem("التقارير البيانية", Icons.Default.ShowChart) { onItemClick(Routes.CHARTS) }
             DrawerItem("أهداف الادخار", Icons.Default.AccountBalanceWallet) { onItemClick(Routes.SAVINGS) }
             DrawerItem("القواعد التلقائية", Icons.Default.Build) { onItemClick(Routes.RULES) }
             DrawerItem("الإعدادات", Icons.Default.Settings) { onItemClick(Routes.SETTINGS) }

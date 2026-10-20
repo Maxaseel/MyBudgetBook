@@ -21,7 +21,8 @@ interface BudgetDao {
                IFNULL((SELECT SUM(betragvz) FROM buchungen 
                        WHERE betragvz < 0 
                        AND buchungsdatum >= b.datumVon 
-                       AND buchungsdatum <= b.datumBis), 0) * -1 AS ausgegeben
+                       AND buchungsdatum <= b.datumBis
+                       AND NOT EXISTS (SELECT 1 FROM buchungen split_child WHERE split_child.id_buchung_splittid = buchungen.id)), 0) * -1 AS ausgegeben
         FROM budgets b
         ORDER BY b.datumVon DESC
     """)

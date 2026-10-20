@@ -27,7 +27,7 @@ interface KontoDao {
 
     @Query("""
         SELECT k.*, 
-               (IFNULL(k.startsaldo, 0) + IFNULL((SELECT SUM(b.betragvz) FROM buchungen b WHERE b.id_buchung_konto = k.id), 0)) AS saldo
+               (IFNULL(k.startsaldo, 0) + IFNULL((SELECT SUM(b.betragvz) FROM buchungen b WHERE b.id_buchung_konto = k.id AND NOT EXISTS (SELECT 1 FROM buchungen split_child WHERE split_child.id_buchung_splittid = b.id)), 0)) AS saldo
         FROM konten k
         ORDER BY k.name ASC
     """)

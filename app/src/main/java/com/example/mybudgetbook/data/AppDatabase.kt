@@ -46,6 +46,7 @@ abstract class AppDatabase : RoomDatabase() {
             }
 
         fun resetInstance() {
+            INSTANCE?.close()
             INSTANCE = null
         }
     }

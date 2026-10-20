@@ -1,5 +1,6 @@
 package com.example.mybudgetbook.ui.screens.data
 
+import android.app.Activity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -64,8 +65,11 @@ fun DataManagementScreen(
         onResult = { uri ->
             if (uri != null) {
                 scope.launch {
+                    db.close()
+                    AppDatabase.resetInstance()
                     val result = backupManager.restoreBackup(uri)
                     status = result.getOrElse { it.message ?: "حدث خطأ أثناء الاستعادة" }
+                    (context as? Activity)?.recreate()
                 }
             }
         }

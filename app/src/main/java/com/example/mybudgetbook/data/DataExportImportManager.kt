@@ -8,6 +8,8 @@ import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import org.json.JSONArray
+import org.json.JSONObject
 
 data class CsvImportResult(
     val importedCount: Int,
@@ -126,7 +128,9 @@ class DataExportImportManager(
                 return@withContext CsvImportResult(0, listOf("تعذر فتح الملف"))
             }
 
-            CsvImportResult(importedCount, errors)
+            val result = CsvImportResult(importedCount, errors)
+            saveImportHistory(uri, result)
+            result
         } catch (e: Exception) {
             CsvImportResult(0, listOf(e.message ?: "تعذر استيراد CSV"))
         }
@@ -139,6 +143,20 @@ class DataExportImportManager(
             "id_buchung_kategorie", "id_buchung_konto", "id_buchung_person",
             "id_buchung_gruppe", "zahlungsart", "vorlage", "art"
         ).joinToString(",")
+    }
+
+    private fun saveImportHistory(uri: Uri, result: CsvImportResult) {
+        val preferences = context.getSharedPreferences("mybudgetbook_imports", Context.MODE_PRIVATE)
+        val history = try { JSONArray(preferences.getString("history", "[]")) } catch (_: Exception) { JSONArray() }
+        val updated = JSONArray().put(
+            JSONObject()
+                .put("file", uri.lastPathSegment ?: "CSV")
+                .put("imported", result.importedCount)
+                .put("errors", result.errors.size)
+                .put("timestamp", System.currentTimeMillis()),
+        )
+        for (index in 0 until minOf(history.length(), 19)) updated.put(history.getJSONObject(index))
+        preferences.edit().putString("history", updated.toString()).apply()
     }
 
     private fun escapeCsv(value: String): String {

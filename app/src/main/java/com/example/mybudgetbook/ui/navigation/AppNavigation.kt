@@ -43,6 +43,7 @@ object Routes {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavigation(db: AppDatabase) {
+    viewModel<RecurringProcessorViewModel>(factory = vmFactory { RecurringProcessorViewModel(db) })
     val nav = rememberNavController()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()

@@ -86,7 +86,7 @@ class DataExportImportManager(
                     if (line.isBlank()) return@forEach
 
                     val values = parseCsvLine(line)
-                    if (values.size < 16) {
+                    if (values.size < 17) {
                         errors.add("سطر غير صحيح: $line")
                         return@forEach
                     }

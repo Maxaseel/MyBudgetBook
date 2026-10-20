@@ -16,6 +16,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -39,6 +40,7 @@ import java.security.MessageDigest
 private const val PREFS = "mybudgetbook_settings"
 
 @Composable
+@OptIn(ExperimentalMaterial3Api::class)
 fun SettingsScreen(onBack: () -> Unit) {
     val context = LocalContext.current
     val prefs = remember(context) { context.getSharedPreferences(PREFS, Activity.MODE_PRIVATE) }

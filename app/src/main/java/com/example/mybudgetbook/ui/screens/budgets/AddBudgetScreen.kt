@@ -17,6 +17,7 @@ import com.example.mybudgetbook.viewmodel.BudgetViewModel
 fun AddBudgetScreen(viewModel: BudgetViewModel, onBack: () -> Unit) {
     var name by remember { mutableStateOf("") }
     var maxSumme by remember { mutableStateOf("") }
+    var carryRemaining by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -31,11 +32,15 @@ fun AddBudgetScreen(viewModel: BudgetViewModel, onBack: () -> Unit) {
         Column(modifier = Modifier.padding(padding).padding(16.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("اسم الميزانية") }, modifier = Modifier.fillMaxWidth(), colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White))
             OutlinedTextField(value = maxSumme, onValueChange = { maxSumme = it }, label = { Text("الحد الأقصى للمبلغ") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.fillMaxWidth(), colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White))
+            Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                Checkbox(checked = carryRemaining, onCheckedChange = { carryRemaining = it })
+                Text("ترحيل المتبقي للشهر التالي", color = Color.White)
+            }
             Button(
                 onClick = {
                     val max = maxSumme.toDoubleOrNull()
                     if (name.isNotBlank() && max != null && max > 0) {
-                        viewModel.addBudget(name, max)
+                        viewModel.addBudget(name, max, carryRemaining)
                         onBack()
                     }
                 },

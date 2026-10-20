@@ -17,6 +17,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenu
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -140,7 +141,7 @@ private fun AddSavingsGoalDialog(
                         trailingIcon = { androidx.compose.material3.ExposedDropdownMenuDefaults.TrailingIcon(accountMenu) },
                         modifier = Modifier.fillMaxWidth().menuAnchor(),
                     )
-                    androidx.compose.material3.ExposedDropdownMenu(expanded = accountMenu, onDismissRequest = { accountMenu = false }) {
+                    ExposedDropdownMenu(expanded = accountMenu, onDismissRequest = { accountMenu = false }) {
                         accounts.forEach { account ->
                             androidx.compose.material3.DropdownMenuItem(
                                 text = { Text(account.konto.name) },

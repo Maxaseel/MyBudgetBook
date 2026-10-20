@@ -17,14 +17,14 @@ class BudgetViewModel(private val db: AppDatabase) : ViewModel() {
     val budgets: StateFlow<List<BudgetMitAusgaben>> = db.budgetDao().getBudgetsWithSpent()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    fun addBudget(name: String, maxSumme: Double) {
+    fun addBudget(name: String, maxSumme: Double, restbudgetUebertragen: Boolean = false) {
         viewModelScope.launch {
             val cal = Calendar.getInstance()
             val start = cal.timeInMillis
             val fmt = SimpleDateFormat("yyyy-MM-dd", Locale.US)
             cal.add(Calendar.MONTH, 1)
             val end = cal.timeInMillis
-            val budget = Budget(name = name, maxSumme = maxSumme, datumVon = start, datumVonSt = fmt.format(start), datumBis = end, datumBisSt = fmt.format(end))
+            val budget = Budget(name = name, maxSumme = maxSumme, datumVon = start, datumVonSt = fmt.format(start), datumBis = end, datumBisSt = fmt.format(end), restbudgetUebertragen = restbudgetUebertragen)
             db.budgetDao().insert(budget)
         }
     }

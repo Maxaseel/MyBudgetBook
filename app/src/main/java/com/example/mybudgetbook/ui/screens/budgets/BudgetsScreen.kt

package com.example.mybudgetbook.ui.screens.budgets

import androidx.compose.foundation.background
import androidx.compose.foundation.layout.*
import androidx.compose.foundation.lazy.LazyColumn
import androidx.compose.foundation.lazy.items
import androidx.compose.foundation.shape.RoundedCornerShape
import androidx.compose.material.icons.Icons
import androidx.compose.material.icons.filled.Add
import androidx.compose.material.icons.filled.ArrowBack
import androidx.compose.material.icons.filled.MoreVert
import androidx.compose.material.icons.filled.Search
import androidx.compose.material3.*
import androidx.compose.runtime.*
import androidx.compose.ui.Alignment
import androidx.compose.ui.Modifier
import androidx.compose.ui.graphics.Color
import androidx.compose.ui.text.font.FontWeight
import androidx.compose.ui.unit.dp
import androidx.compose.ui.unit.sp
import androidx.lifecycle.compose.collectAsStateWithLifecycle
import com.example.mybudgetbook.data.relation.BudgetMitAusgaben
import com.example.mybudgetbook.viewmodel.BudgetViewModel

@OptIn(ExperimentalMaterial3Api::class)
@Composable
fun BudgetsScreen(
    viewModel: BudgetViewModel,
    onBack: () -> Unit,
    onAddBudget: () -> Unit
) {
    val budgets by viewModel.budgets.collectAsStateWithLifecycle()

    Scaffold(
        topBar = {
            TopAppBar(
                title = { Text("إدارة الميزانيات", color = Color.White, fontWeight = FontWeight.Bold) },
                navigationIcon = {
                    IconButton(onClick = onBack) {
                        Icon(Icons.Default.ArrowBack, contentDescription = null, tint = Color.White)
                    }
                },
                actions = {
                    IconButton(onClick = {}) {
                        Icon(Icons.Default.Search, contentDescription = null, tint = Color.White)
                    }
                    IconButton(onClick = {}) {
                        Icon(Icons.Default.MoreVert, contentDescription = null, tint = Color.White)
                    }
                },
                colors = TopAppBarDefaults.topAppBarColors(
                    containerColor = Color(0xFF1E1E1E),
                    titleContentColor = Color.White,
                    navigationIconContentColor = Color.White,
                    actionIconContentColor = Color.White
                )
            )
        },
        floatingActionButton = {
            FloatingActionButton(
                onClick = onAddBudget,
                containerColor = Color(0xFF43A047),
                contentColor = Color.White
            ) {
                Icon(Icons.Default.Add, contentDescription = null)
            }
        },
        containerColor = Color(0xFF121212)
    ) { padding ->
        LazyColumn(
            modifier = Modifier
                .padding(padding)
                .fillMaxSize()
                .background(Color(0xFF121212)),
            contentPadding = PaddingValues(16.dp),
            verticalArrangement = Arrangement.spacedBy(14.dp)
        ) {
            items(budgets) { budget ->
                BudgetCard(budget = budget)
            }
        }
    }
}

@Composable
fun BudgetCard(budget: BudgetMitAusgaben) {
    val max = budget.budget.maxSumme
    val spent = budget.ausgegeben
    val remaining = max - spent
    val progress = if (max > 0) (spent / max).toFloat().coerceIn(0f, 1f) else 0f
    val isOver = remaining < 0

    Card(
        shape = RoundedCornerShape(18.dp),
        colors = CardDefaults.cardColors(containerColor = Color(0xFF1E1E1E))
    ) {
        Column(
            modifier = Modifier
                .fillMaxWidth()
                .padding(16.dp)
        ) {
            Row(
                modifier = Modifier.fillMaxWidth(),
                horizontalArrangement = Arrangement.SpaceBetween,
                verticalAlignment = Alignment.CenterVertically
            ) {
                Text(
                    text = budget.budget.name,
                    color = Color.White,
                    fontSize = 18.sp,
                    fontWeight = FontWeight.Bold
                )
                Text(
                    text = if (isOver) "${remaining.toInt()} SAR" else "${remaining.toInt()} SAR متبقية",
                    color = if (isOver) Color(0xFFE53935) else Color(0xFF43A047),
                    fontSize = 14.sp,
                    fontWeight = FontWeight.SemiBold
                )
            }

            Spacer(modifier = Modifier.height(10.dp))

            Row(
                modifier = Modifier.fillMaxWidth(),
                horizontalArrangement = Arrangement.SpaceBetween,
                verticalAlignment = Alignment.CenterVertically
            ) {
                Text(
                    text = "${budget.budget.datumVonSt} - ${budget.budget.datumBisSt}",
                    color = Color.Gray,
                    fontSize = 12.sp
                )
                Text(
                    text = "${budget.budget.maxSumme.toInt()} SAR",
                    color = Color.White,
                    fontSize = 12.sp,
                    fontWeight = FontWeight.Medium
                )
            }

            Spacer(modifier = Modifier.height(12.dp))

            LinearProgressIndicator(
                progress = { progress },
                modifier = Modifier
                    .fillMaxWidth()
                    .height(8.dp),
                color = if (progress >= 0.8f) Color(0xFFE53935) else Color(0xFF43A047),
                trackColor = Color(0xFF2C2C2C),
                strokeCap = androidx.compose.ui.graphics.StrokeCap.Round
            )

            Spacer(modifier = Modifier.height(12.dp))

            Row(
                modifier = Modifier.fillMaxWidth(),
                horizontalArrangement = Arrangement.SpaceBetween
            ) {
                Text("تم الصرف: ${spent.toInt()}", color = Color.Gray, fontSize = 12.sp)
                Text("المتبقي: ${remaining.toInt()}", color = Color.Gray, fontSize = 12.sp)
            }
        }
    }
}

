@@ -1,0 +1,161 @@
+package com.example.mybudgetbook.ui.screens.accounts
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.mybudgetbook.data.relation.KontoMitSaldo
+import com.example.mybudgetbook.viewmodel.AccountsViewModel
+
+enum class SortOrder { NAME_ASC, NAME_DESC, BALANCE_HIGH, BALANCE_LOW }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AccountsScreen(
+    viewModel: AccountsViewModel,
+    onBack: () -> Unit,
+    onAddAccount: () -> Unit,
+    onEditAccount: (Long) -> Unit
+) {
+    val accounts by viewModel.accounts.collectAsStateWithLifecycle()
+    var showSortDialog by remember { mutableStateOf(false) }
+    var sortOrder by remember { mutableStateOf(SortOrder.NAME_ASC) }
+
+    val sortedAccounts = remember(accounts, sortOrder) {
+        when (sortOrder) {
+            SortOrder.NAME_ASC -> accounts.sortedBy { it.konto.name }
+            SortOrder.NAME_DESC -> accounts.sortedByDescending { it.konto.name }
+            SortOrder.BALANCE_HIGH -> accounts.sortedByDescending { it.saldo }
+            SortOrder.BALANCE_LOW -> accounts.sortedBy { it.saldo }
+        }
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("الحسابات", color = Color.White, fontWeight = FontWeight.Bold) },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = null, tint = Color.White)
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { showSortDialog = true }) {
+                        Icon(Icons.Default.Sort, contentDescription = null, tint = Color.White)
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFF1E1E1E),
+                    titleContentColor = Color.White,
+                    navigationIconContentColor = Color.White,
+                    actionIconContentColor = Color.White
+                )
+            )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = onAddAccount,
+                containerColor = Color(0xFF43A047),
+                contentColor = Color.White
+            ) {
+                Icon(Icons.Default.Add, contentDescription = null)
+            }
+        },
+        containerColor = Color(0xFF121212)
+    ) { padding ->
+        LazyColumn(
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxSize()
+                .background(Color(0xFF121212)),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            items(sortedAccounts, key = { it.konto.id }) { account ->
+                AccountRow(account) { onEditAccount(account.konto.id) }
+            }
+        }
+    }
+
+    if (showSortDialog) {
+        AlertDialog(
+            onDismissRequest = { showSortDialog = false },
+            containerColor = Color(0xFF1E1E1E),
+            title = { Text("فرز حسب", color = Color.White) },
+            text = {
+                Column {
+                    SortOption("الحساب (من الألف إلى الياء)", sortOrder == SortOrder.NAME_ASC) {
+                        sortOrder = SortOrder.NAME_ASC; showSortDialog = false
+                    }
+                    SortOption("الحساب (من الياء إلى الألف)", sortOrder == SortOrder.NAME_DESC) {
+                        sortOrder = SortOrder.NAME_DESC; showSortDialog = false
+                    }
+                    SortOption("الرصيد الحالي (الأكبر)", sortOrder == SortOrder.BALANCE_HIGH) {
+                        sortOrder = SortOrder.BALANCE_HIGH; showSortDialog = false
+                    }
+                    SortOption("الرصيد الحالي (الأصغر)", sortOrder == SortOrder.BALANCE_LOW) {
+                        sortOrder = SortOrder.BALANCE_LOW; showSortDialog = false
+                    }
+                }
+            },
+            confirmButton = {}
+        )
+    }
+}
+
+@Composable
+private fun AccountRow(acc: KontoMitSaldo, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color(0xFF1E1E1E), RoundedCornerShape(14.dp))
+            .clickable { onClick() }
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column {
+            Text(acc.konto.name, color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text("الرصيد الحالي", color = Color.Gray, fontSize = 12.sp)
+        }
+        Text(
+            text = "${acc.saldo} SAR",
+            color = if (acc.saldo >= 0) Color(0xFF43A047) else Color(0xFFE53935),
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
+private fun SortOption(text: String, selected: Boolean, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        RadioButton(
+            selected = selected,
+            onClick = onClick,
+            colors = RadioButtonDefaults.colors(selectedColor = Color.White)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(text, color = Color.White)
+    }
+}
+

@@ -94,7 +94,10 @@ fun DataManagementScreen(
             DataActionItem("إنشاء نسخة احتياطية", Icons.Default.Save) {
                 scope.launch {
                     val backupResult = backupManager.createBackup()
-                    status = backupResult.getOrElse { it.message ?: "حدث خطأ أثناء إنشاء النسخة" }
+                    status = backupResult.fold(
+                        onSuccess = { uri -> "تم إنشاء النسخة: ${uri.lastPathSegment ?: "backup"}" },
+                        onFailure = { error -> error.message ?: "حدث خطأ أثناء إنشاء النسخة" },
+                    )
                 }
             }
 

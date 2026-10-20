@@ -23,6 +23,9 @@ interface BuchungDao {
     @Query("SELECT * FROM buchungen WHERE id = :id")
     suspend fun getById(id: Long): Buchung?
 
+    @Query("SELECT * FROM buchungen ORDER BY buchungsdatum ASC")
+    suspend fun getAllRaw(): List<Buchung>
+
     @Query("""
         SELECT
             buchungen.id AS id,

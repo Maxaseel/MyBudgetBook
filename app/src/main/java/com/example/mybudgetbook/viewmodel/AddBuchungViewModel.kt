@@ -50,8 +50,8 @@ data class AddBuchungUiState(
     val error: String? = null,
 )
 
-class AddBuchungViewModel(private val db: AppDatabase) : ViewModel() {
-    private val _state = MutableStateFlow(AddBuchungUiState())
+class AddBuchungViewModel(private val db: AppDatabase, currency: String = "SAR") : ViewModel() {
+    private val _state = MutableStateFlow(AddBuchungUiState(waehrung = currency))
     val state: StateFlow<AddBuchungUiState> = _state.asStateFlow()
     private var suggestionJob: Job? = null
 
@@ -100,9 +100,10 @@ class AddBuchungViewModel(private val db: AppDatabase) : ViewModel() {
     suspend fun suggestFromPreviousTransactions(input: String): AutofillSuggestion? {
         val normalized = input.trim().lowercase(Locale.ROOT)
         if (normalized.length < 2) return null
-        val match = db.buchungDao().findRecentBySimilarText(normalized)
+        val candidates = db.buchungDao().findRecentBySimilarText(normalized)
+        val match = candidates
             .firstOrNull { it.text.trim().equals(input.trim(), ignoreCase = true) }
-            ?: db.buchungDao().findRecentBySimilarText(normalized).firstOrNull()
+            ?: candidates.firstOrNull()
             ?: return null
         val type = when {
             match.idBuchungUmbuchung != null -> TransactionType.TRANSFER

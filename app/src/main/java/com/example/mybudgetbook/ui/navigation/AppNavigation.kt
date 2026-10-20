@@ -5,6 +5,7 @@ import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -58,6 +59,10 @@ object Routes {
 @Composable
 fun AppNavigation(db: AppDatabase) {
     viewModel<RecurringProcessorViewModel>(factory = vmFactory { RecurringProcessorViewModel(db) })
+    val context = LocalContext.current
+    val currency = remember(context) {
+        context.getSharedPreferences("mybudgetbook_settings", 0).getString("currency", "SAR") ?: "SAR"
+    }
     val nav = rememberNavController()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -94,7 +99,7 @@ fun AppNavigation(db: AppDatabase) {
                 BuchungenScreen(viewModel = vm, onAdd = { nav.navigate(Routes.ADD) }, onOpenDrawer = { scope.launch { drawerState.open() } }, onOpenStats = { nav.navigate(Routes.STATISTICS) })
             }
             composable(Routes.ADD) {
-                val vm: AddBuchungViewModel = viewModel(factory = vmFactory { AddBuchungViewModel(db) })
+                val vm: AddBuchungViewModel = viewModel(factory = vmFactory { AddBuchungViewModel(db, currency) })
                 AddBuchungScreen(viewModel = vm, onSaved = { nav.popBackStack() }, onBack = { nav.popBackStack() })
             }
             composable(Routes.ACCOUNTS) {
